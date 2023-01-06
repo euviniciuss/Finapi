@@ -41,4 +41,16 @@ api.post('/account', (request, response) => {
   return response.status(201).json({ message: "Conta criada com sucesso" })
 })
 
+api.get('/statement/:cpf', (request, reponse) => {
+  const { cpf } = request.params
+
+  const customer:CustomersProps | undefined = customers.find((customer) => customer.cpf === cpf)
+
+  if (!customer) {
+    return reponse.status(404).json({ error: "Cpf não encontrado!" })
+  }
+
+  return reponse.status(200).json(customer.statement)
+})
+
 api.listen(3333)
