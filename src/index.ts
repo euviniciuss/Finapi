@@ -1,36 +1,44 @@
-import express, { json } from 'express'
-import { v4 as uuid } from 'uuid'
+import express, { response } from 'express'
+import { v4 as uuidv4 } from 'uuid'
 
-const app = express()
+const api = express()
 
-app.use(express.json())
+api.use(express.json())
 
-const customers: Customers[] = []
-
-type Customers = {
+type CustomersProps = {
   cpf: string
   name: string
   id: string
-  statement: Array<string>
+  statement: []
 }
 
-app.post("/account", (request, response) => {
-  const id = uuid()
+const customers: CustomersProps[] = []
 
-  const { cpf, name } = request.body
+api.get('/users', (request, response) => {
+  return response.json(customers)
+})
 
-  const data: Customers = {
-    id,
+api.post('/account', (request, response) => {
+  const { name, cpf } = request.body
+
+  const cpfAlreadyExist = customers.some((customer) => customer.cpf === cpf)
+
+  if (cpfAlreadyExist) {
+    return response.status(400).json({ error: "Cliente já cadastrado na base!" })
+  }
+
+  const id = uuidv4()
+
+  const data: CustomersProps = {
     cpf,
     name,
+    id,
     statement: []
   }
 
   customers.push(data)
 
-  console.log(customers);
-  
-  return response.status(201).json({ message: "Conta criada com sucesso!" })
+  return response.status(201).json({ message: "Conta criada com sucesso" })
 })
 
-app.listen(3333)
+api.listen(3333)
