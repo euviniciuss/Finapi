@@ -9,7 +9,14 @@ export type CustomersProps = {
   cpf: string
   name: string
   id: string
-  statement: []
+  statement: StatementOperationProps[]
+}
+
+type StatementOperationProps = {
+  description: string
+  amount: number
+  created_at: Date
+  type: 'credit' | 'debit'
 }
 
 const customers: CustomersProps[] = []
@@ -59,6 +66,23 @@ api.get('/statement', verifyIfExistAccountCpf, (request, response) => {
   const { customer } = request
 
   return response.status(200).json(customer?.statement)
+})
+
+api.post('/deposit', verifyIfExistAccountCpf, (request, response) => {
+  const { description, amount } = request.body
+
+  const { customer } = request
+
+  const statementOperation: StatementOperationProps = {
+    description,
+    amount,
+    created_at: new Date(),
+    type: 'credit'
+  }
+
+  customer?.statement.push(statementOperation)
+
+  return response.status(201).json({ message: 'Deposito realizado com sucesso!' })
 })
 
 api.listen(3333)
