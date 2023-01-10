@@ -1,4 +1,4 @@
-import express, { response } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 
 const api = express()
@@ -13,6 +13,20 @@ type CustomersProps = {
 }
 
 const customers: CustomersProps[] = []
+
+function verifyIfExistAccountCpf(request: Request | any, response: Response, next: NextFunction) {
+  const { cpf } = request.headers
+
+  const customer: CustomersProps | undefined = customers.find((customer) => customer.cpf === cpf)
+
+  if (!customer) {
+    return response.status(404).json({ error: "Cpf não encontrado!" })
+  }
+
+  request.customer = customer
+
+  return next()
+}
 
 api.get('/users', (request, response) => {
   return response.json(customers)
@@ -41,16 +55,10 @@ api.post('/account', (request, response) => {
   return response.status(201).json({ message: "Conta criada com sucesso" })
 })
 
-api.get('/statement/:cpf', (request, reponse) => {
-  const { cpf } = request.params
+api.get('/statement', verifyIfExistAccountCpf, (request : Request | any, response) => {
+  const { customer } = request
 
-  const customer:CustomersProps | undefined = customers.find((customer) => customer.cpf === cpf)
-
-  if (!customer) {
-    return reponse.status(404).json({ error: "Cpf não encontrado!" })
-  }
-
-  return reponse.status(200).json(customer.statement)
+  return response.status(200).json(customer.statement)
 })
 
 api.listen(3333)
