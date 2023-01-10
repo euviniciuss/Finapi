@@ -5,7 +5,7 @@ const api = express()
 
 api.use(express.json())
 
-type CustomersProps = {
+export type CustomersProps = {
   cpf: string
   name: string
   id: string
@@ -14,7 +14,7 @@ type CustomersProps = {
 
 const customers: CustomersProps[] = []
 
-function verifyIfExistAccountCpf(request: Request | any, response: Response, next: NextFunction) {
+function verifyIfExistAccountCpf(request: Request, response: Response, next: NextFunction) {
   const { cpf } = request.headers
 
   const customer: CustomersProps | undefined = customers.find((customer) => customer.cpf === cpf)
@@ -55,10 +55,10 @@ api.post('/account', (request, response) => {
   return response.status(201).json({ message: "Conta criada com sucesso" })
 })
 
-api.get('/statement', verifyIfExistAccountCpf, (request : Request | any, response) => {
+api.get('/statement', verifyIfExistAccountCpf, (request, response) => {
   const { customer } = request
 
-  return response.status(200).json(customer.statement)
+  return response.status(200).json(customer?.statement)
 })
 
 api.listen(3333)
