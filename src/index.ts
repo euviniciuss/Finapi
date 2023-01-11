@@ -83,6 +83,17 @@ api.put('/account', verifyIfExistAccountCpf, (request, response) => {
   return response.status(200).json({ message: 'Nome atualizado com sucesso!' })
 })
 
+api.delete('/account', verifyIfExistAccountCpf, (request, response) => {
+  const { customer } = request
+
+  // TO-DO Alterar tipagem corretamente do data
+  const data: CustomersProps | any = customer
+
+  customers.splice(data, 1)
+
+  return response.status(204).json({ message: 'Usuário removido com sucesso!' })
+})
+
 api.get('/statement', verifyIfExistAccountCpf, (request, response) => {
   const { customer } = request
 
