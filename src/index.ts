@@ -74,6 +74,15 @@ api.post('/account', (request, response) => {
   return response.status(201).json({ message: "Conta criada com sucesso" })
 })
 
+api.put('/account', verifyIfExistAccountCpf, (request, response) => {
+  const { name } = request.body
+  const { customer } = request
+
+  customer ? customer.name = name : ''
+
+  return response.status(200).json({ message: 'Nome atualizado com sucesso!' })
+})
+
 api.get('/statement', verifyIfExistAccountCpf, (request, response) => {
   const { customer } = request
 
