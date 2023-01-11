@@ -13,7 +13,7 @@ export type CustomersProps = {
 }
 
 type StatementOperationProps = {
-  description: string
+  description?: string
   amount: number
   created_at: Date
   type: 'credit' | 'debit'
@@ -33,6 +33,18 @@ function verifyIfExistAccountCpf(request: Request, response: Response, next: Nex
   request.customer = customer
 
   return next()
+}
+
+function getBalance(statement: StatementOperationProps[] | undefined) {
+  const balance = statement?.reduce((acc, operation) => {
+    if (operation.type === 'credit') {
+      return acc + operation.amount
+    } else {
+      return acc - operation.amount
+    }
+  }, 0)
+
+  return balance
 }
 
 api.get('/users', (request, response) => {
@@ -83,6 +95,27 @@ api.post('/deposit', verifyIfExistAccountCpf, (request, response) => {
   customer?.statement.push(statementOperation)
 
   return response.status(201).json({ message: 'Deposito realizado com sucesso!' })
+})
+
+api.post('/withdraw', verifyIfExistAccountCpf, (request, response) => {
+  const { amount } = request.body
+  const { customer } = request
+
+  const balance: number | undefined = getBalance(customer?.statement)
+
+  if (balance !== undefined && balance < amount) {
+    return response.status(400).json({ error: "Saldo insuficiente para saque!" })
+  }
+
+  const statementOperation: Omit<StatementOperationProps, "description"> = {
+    amount,
+    created_at: new Date(),
+    type: 'debit'
+  }
+
+  customer?.statement.push(statementOperation)
+
+  return response.status(201).json({ message: "Saque realizado com sucesso!" })
 })
 
 api.listen(3333)
